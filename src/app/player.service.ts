@@ -1,6 +1,9 @@
 import { Injectable }    from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Http, Headers, Response } from '@angular/http';
 
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/operator/catch';
+import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 
 import { Player } from './Player';
@@ -12,15 +15,22 @@ export class PlayerService {
   private playersUrl = 'api/players';  // URL to web api
 
   constructor(private http: Http) { }
+  
+  private extractData(res: Response) {
+      console.log("Try calling exract ", res);
+      let body = res.json();
+      console.log("body contain : ", body);
+      return body || [];
+    }
 
-  getPlayers(): Promise<Player[]> {
-    return this.http.get(this.playersUrl)
-               .toPromise()
-               .then(response => response.json().data as Player[])
-               .catch(this.handleError);
+  
+  getPlayers(): Observable<Player[]> {
+      console.log("Call getPlayers");
+      return this.http.get(this.playersUrl)
+      .map(this.extractData)
+      .catch(this.handleError);
   }
-
-
+  
   getPlayer(id: number): Promise<Player> {
     const url = `${this.playersUrl}/${id}`;
     return this.http.get(url)
@@ -54,9 +64,18 @@ export class PlayerService {
       .catch(this.handleError);
   }
 
-  private handleError(error: any): Promise<any> {
-    console.error('An error occurred', error); // for demo purposes only
-    return Promise.reject(error.message || error);
-  }
+  private handleError (error: Response | any) {
+      // In a real world app, you might use a remote logging infrastructure
+      let errMsg: string;
+      if (error instanceof Response) {
+        const body = error.json() || '';
+        const err = body.error || JSON.stringify(body);
+        errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
+      } else {
+        errMsg = error.message ? error.message : error.toString();
+      }
+      console.error(errMsg);
+      return Observable.throw(errMsg);
+    }
 }
 

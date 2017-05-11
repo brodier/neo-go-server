@@ -7,9 +7,11 @@ import { PlayerService }         from './player.service';
 @Component({
   selector: 'my-players',
   templateUrl: './players.component.html',
+  providers: [PlayerService],
   styleUrls: [ './players.component.css' ]
 })
 export class PlayersComponent implements OnInit {
+  errorMessage: string;
   players: Player[];
   selectedPlayer: Player;
 
@@ -18,9 +20,10 @@ export class PlayersComponent implements OnInit {
     private router: Router) { }
 
   getPlayers(): void {
-    this.playerService
-        .getPlayers()
-        .then(players => this.players = players);
+      this.playerService.getPlayers()
+      .subscribe(
+        players => this.players = players,
+        error =>  this.errorMessage = <any>error);
   }
 
   add(name: string, level: number): void {

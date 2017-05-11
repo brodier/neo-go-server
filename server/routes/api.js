@@ -27,10 +27,18 @@ router.get('/players', (req, res) => {
 	    	res.send('api works, No user found' );
 	    } else {
 	        var users = results;
-	        console.log(JSON.stringify(users, null, 4));
 	        console.log('params: ',req.params);
 	        console.log('query: ', req.query);
-	        res.send(JSON.stringify(users, null, 4));
+	        console.log(JSON.stringify(users, null, 4));
+	        jsonPlayers = JSON.stringify(
+	        	users.map(function(u){
+	        		if(u.u.properties)
+	        			return {id: u.u._id, name: u.u.properties.name || "no name", level: 0};
+	        		else
+	        			return {id: u.u._id, name: "no name", level: 1000};
+	        	}), null, 4);
+	        console.log(jsonPlayers)
+	        res.send(jsonPlayers);
 	    }
 	});
 });
