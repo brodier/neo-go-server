@@ -16,7 +16,7 @@ var getEmail = function(req){
 /* GET api listing. */
 router.get('/players', (req, res) => {
 	db.cypher({
-	    query: 'MATCH (u:User) RETURN u',
+	    query: 'MATCH (u:Player) RETURN u',
 	    params: {}
 	}, function (err, results) {
 	    if (err) 
@@ -33,7 +33,7 @@ router.get('/players', (req, res) => {
 	        jsonPlayers = JSON.stringify(
 	        	users.map(function(u){
 	        		if(u.u.properties)
-	        			return {id: u.u._id, name: u.u.properties.name || "no name", level: 0};
+	        			return {id: u.u._id, name: u.u.properties.name || "no name", level: u.u.properties.level || "undef"};
 	        		else
 	        			return {id: u.u._id, name: "no name", level: 1000};
 	        	}), null, 4);
@@ -45,19 +45,20 @@ router.get('/players', (req, res) => {
 
 router.post('/players', (req, res) => {
 	db.cypher({
-	    query: 'CREATE (u:User {player}) RETURN u',
-	    params: { player: req.query }
-	}, function (err, results) {
+	    query: 'CREATE (u:Player {player}) RETURN u',
+	    params: { player: req.body }
+	}, function (err, result) {
 	    if (err) 
 	    	throw err;
-	    console.log('req create player with : ', req.query);
-	    res.send(req.query);
+	    var p = result[0].u;
+	    player = {id: p._id, name: p.properties.name || "no name", level: p.properties.level || "undef"};
+	    res.send(player);
 	});
 });
 
 router.get('/players/:id', (req, res) => {
 	db.cypher({
-	    query: 'MATCH (u:User) WHERE ID(u)={id} RETURN u',
+	    query: 'MATCH (u:Player) WHERE ID(u)={id} RETURN u',
 	    params: {id: parseInt(req.params.id) }
 	}, function (err, results) {
 	    if (err) 
@@ -80,7 +81,7 @@ router.get('/players/:id', (req, res) => {
 router.put('/players/:id', (req, res) => {
 	db.cypher({
 	    query: 'MATCH (u:User) WHERE ID(u)={id} SET u+= {player} RETURN u',
-	    params: {id: req.params.id, player: req.query}
+	    params: {id: parseInt(req.params.id), player: {name: req.query.name, level: parseInt(req.query.level)}}
 	}, function (err, results) {
 	    if (err) {
 	    	console.log("Err with Neo4J", err)
@@ -101,12 +102,12 @@ router.put('/players/:id', (req, res) => {
 
 router.delete('/players/:id', (req, res) => {
 	db.cypher({
-	    query: 'MATCH (u:User) WHERE ID(u)={id} DELETE u',
-	    params: {id: req.params.id}
+	    query: 'MATCH (u:Player) WHERE ID(u)={id} DELETE u',
+	    params: {id: parseInt(req.params.id) }
 	}, function (err, results) {
 	    if (err) 
 	    	throw err;
-	    console.log("req delete for user id: ", id);
+	    console.log("req delete for user id: ", req.params.id, " result: ", results);
 	    res.send({});
 	});
 });

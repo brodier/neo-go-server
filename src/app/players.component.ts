@@ -30,7 +30,7 @@ export class PlayersComponent implements OnInit {
     name = name.trim();
     if (!name) { return; }
     this.playerService.create(name,level)
-      .then(player => {
+      .subscribe(player => {
         this.players.push(player);
         this.selectedPlayer = null;
       });
@@ -39,7 +39,7 @@ export class PlayersComponent implements OnInit {
   delete(player: Player): void {
     this.playerService
         .delete(player.id)
-        .then(() => {
+        .subscribe(() => {
           this.players = this.players.filter(h => h !== player);
           if (this.selectedPlayer === player) { this.selectedPlayer = null; }
         });

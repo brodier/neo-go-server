@@ -31,36 +31,31 @@ export class PlayerService {
       .catch(this.handleError);
   }
   
-  getPlayer(id: number): Promise<Player> {
+  getPlayer(id: number): Observable<Player> {
     const url = `${this.playersUrl}/${id}`;
     return this.http.get(url)
-      .toPromise()
-      .then(response => response.json().data as Player)
+      .map(this.extractData)
       .catch(this.handleError);
   }
 
-  delete(id: number): Promise<void> {
+  delete(id: number): Observable<void> {
     const url = `${this.playersUrl}/${id}`;
     return this.http.delete(url, {headers: this.headers})
-      .toPromise()
-      .then(() => null)
+      .map(this.extractData)
       .catch(this.handleError);
   }
 
-  create(name: string, level: number): Promise<Player> {
+  create(name: string, level: number): Observable<Player> {
     return this.http
       .post(this.playersUrl, JSON.stringify({name: name, level: level}), {headers: this.headers})
-      .toPromise()
-      .then(res => res.json().data as Player)
-      .catch(this.handleError);
+      .map(this.extractData).catch(this.handleError);
   }
 
-  update(player: Player): Promise<Player> {
+  update(player: Player): Observable<Player> {
     const url = `${this.playersUrl}/${player.id}`;
     return this.http
       .put(url, JSON.stringify(player), {headers: this.headers})
-      .toPromise()
-      .then(() => player)
+      .map(this.extractData)
       .catch(this.handleError);
   }
 
@@ -78,4 +73,3 @@ export class PlayerService {
       return Observable.throw(errMsg);
     }
 }
-
